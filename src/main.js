@@ -9,7 +9,7 @@ import 'amfe-flexible'
 
 Vue.use(Vant)
 Vue.config.productionTip = false
-
+// console.log(store.state.tokenObj.token)
 new Vue({
   router,
   store,
