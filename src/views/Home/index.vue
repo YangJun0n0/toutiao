@@ -25,17 +25,21 @@
       close-icon-position="top-left"
     >
       <channeel-edit
+        v-if="isShow"
         :my-channels="channel"
         @chang-active=";[(isShow = false), (active = $event)]"
+        @del-channel="delChannel"
+        @add-channel="addChannel"
       ></channeel-edit>
     </van-popup>
   </div>
 </template>
 
 <script>
-import { getChannelAPI } from '@/api'
+import { getChannelAPI, delChannelAPI, addChannelAPI } from '@/api'
 import ArticleList from './components/ArticleList.vue'
 import ChanneelEdit from './components/ChanneelEdit.vue'
+import { mapGetters, mapMutations } from 'vuex'
 export default {
   components: {
     ArticleList,
@@ -49,9 +53,25 @@ export default {
     }
   },
   created() {
-    this.getChannel()
+    this.initChannels()
+  },
+  computed: {
+    ...mapGetters(['isLogin'])
   },
   methods: {
+    ...mapMutations(['SET_MY_CHANNEL']),
+    initChannels() {
+      if (this.isLogin) {
+        this.getChannel()
+      } else {
+        const myChannels = this.$store.state.myChannel
+        if (myChannels === 0) {
+          this.getChannel()
+        } else {
+          this.channel = myChannels
+        }
+      }
+    },
     async getChannel() {
       try {
         const { data } = await getChannelAPI()
@@ -63,6 +83,47 @@ export default {
         else {
           const status = e.response.status
           status === 507 && this.$toast.fail('请刷新')
+        }
+      }
+    },
+    // 删除频道
+    async delChannel(id) {
+      // console.log(id)
+      try {
+        const newChannel = this.channel.filter((item) => item.id !== id)
+        if (this.isLogin) {
+          await delChannelAPI(id)
+        } else {
+          // 频道存储本地
+          this.SET_MY_CHANNEL(newChannel)
+        }
+        this.channel = newChannel
+      } catch (error) {
+        // 401：用户未认证 这是axios错误
+        if (error.response && error.response.status === 401) {
+          this.$toast.fail('请登录再删除')
+        } else {
+          throw error
+        }
+      }
+    },
+    // 添加频道
+    async addChannel(channels) {
+      try {
+        if (this.isLogin) {
+          await addChannelAPI(channels.id, this.channel.length)
+        } else {
+          // 频道存储本地
+          this.SET_MY_CHANNEL([...this.channel, channels])
+        }
+        this.channel.push(channels)
+        this.$toast.success('添加频道成功')
+      } catch (error) {
+        // 401：用户未认证 这是axios错误
+        if (error.response && error.response.status === 401) {
+          this.$toast.fail('请登录再删除')
+        } else {
+          throw error
         }
       }
     }

@@ -32,6 +32,7 @@
           :key="item.id"
           :text="item.name"
           icon="plus"
+          @click="$emit('add-channel', item)"
         />
       </van-grid>
     </div>
@@ -68,9 +69,10 @@ export default {
       // console.log(data.data)
       this.allChannels = data.data.channels
     },
-    handleMyChannels({ name }, index) {
+    handleMyChannels({ name, id }, index) {
       if (this.isEdit && name !== '推荐') {
-        console.log('频道', name)
+        // console.log('频道', name)
+        this.$emit('del-channel', id)
       } else {
         // 1. 关闭pindao
         this.$emit('chang-active', index)
