@@ -7,15 +7,16 @@ export default new Vuex.Store({
   plugins: [
     createPersistedState({
       key: 'HEIMA_TOUTIAO',
-      reducer({ tokenObj }) {
+      reducer({ tokenObj, history }) {
         // 默认传入state
-        console.log({ tokenObj })
-        return { tokenObj }
+        // console.log({ tokenObj ,history})
+        return { tokenObj, history }
       }
     })
   ],
   state: {
-    tokenObj: {}
+    tokenObj: {},
+    history: []
   },
   getters: {
     isLogin(state) {
@@ -25,6 +26,13 @@ export default new Vuex.Store({
   mutations: {
     SET_TOKEN(state, token) {
       state.tokenObj = token
+    },
+    /**
+     *
+     * @param {*} history 添加或者删除后的数据
+     */
+    SET_HISTORIES(state, history) {
+      state.history = history
     }
   },
   actions: {},
